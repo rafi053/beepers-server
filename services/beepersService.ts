@@ -45,24 +45,27 @@ export const getDetailsByID = async (id: string): Promise<Beeper> => {
 
 export const updateTheStatusOfBeeper = async (
   id: string, lat?: number, lon?: number
-): Promise<string> => {
+): Promise<string | undefined> => {
   const beeper: Beeper = await getDetailsByID(id);
   const oldStatus: string = beeper.status;
   const newStatus: string = getNextEnum(oldStatus);
-  if (oldStatus === 'Incorrect status') {
-    return oldStatus;
-  }
-  else if(oldStatus === 'It is not possible to change status after detonated'){
-    return oldStatus;
-  }
 
-  else if(oldStatus === 'shipped' && checkValidCords(lat, lon)){
+  if (lat && lon) {
+    if(oldStatus === 'shipped' && checkValidCords(lat, lon)){
     const newBeeper:Beeper= {...beeper}
     newBeeper.status = newStatus;
     newBeeper.latitude= lat;
     newBeeper.longitude= lon;
     await  updateJsonFile(newBeeper);
     return newStatus;
+  }}
+
+  else{
+    if (oldStatus === 'Incorrect status') {
+    return oldStatus;
+    }
+    else if(oldStatus === 'It is not possible to change status after detonated'){
+    return oldStatus;
   }
 
   else{
@@ -70,8 +73,17 @@ export const updateTheStatusOfBeeper = async (
     newBeeper.status = newStatus;
     await  updateJsonFile(newBeeper);
     return newStatus;
-  }
-};
+  }};
+}
+
+
+  
+  
+
+   
+
+  
+
 
 
 export const deleteBeeperByID = async (id: string): Promise<void> => {
@@ -119,5 +131,13 @@ function getNextEnum(status: string): string {
 
 
 function checkValidCords(lat: number, lon: number):boolean {
-  
-}
+   let result: boolean = false;
+   const lati: number[] = Latitude;
+   const long: number[] = Longitude;
+   const isLat: number = lati.indexOf(lat);
+   const isLon: number = long.indexOf(lon);
+   if (isLat && isLon === -1) {
+     return result;
+   }
+  return true;
+  }

@@ -14,7 +14,7 @@ export const createNewBeeper = async (req: Request, res: Response): Promise<void
       }
   
       const beeper: Beeper = await createBeeper(name);
-      res.status(201).json({ bookId: book.id, book:book } );
+      res.status(201).json({ beeper } );
     } catch (error: any) {
       if (error.message === "Username already exists.") {
         res.status(409).json({ error: error.message });
@@ -28,17 +28,10 @@ export const createNewBeeper = async (req: Request, res: Response): Promise<void
   
   export const geAllBeepers = async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId: string = req.params.userId;
-  
-      if (!userId) {
-        res.status(400).json({ error: "Username and password are required." });
-        return;
-      }
-  
-      const books = await getBooks(userId);
-      res.status(200).json(books);
+      
+      const beepers = await getBeepers();
+      res.status(200).json(beepers);
     } catch (error: any) {
-      // you can also check for unkown if it instance of Error.
       if (error.message === "Invalid username or password.") {
         res.status(401).json({ error: error.message });
       } else {
@@ -50,17 +43,11 @@ export const createNewBeeper = async (req: Request, res: Response): Promise<void
 
   export const getDetailsOfSpecificBeeperByID = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { userName, password } = req.body;
+      const id: string = req.params.id;
   
-      if (!userName || !password) {
-        res.status(400).json({ error: "Username and password are required." });
-        return;
-      }
-  
-      const userId = await authenticateUser(userName, password);
-      res.status(200).json({ userid: userId });
+      const beeperFind = await getDetailsByID(id);
+      res.status(200).json({ beeperFind: beeperFind });
     } catch (error: any) {
-      // you can also check for unkown if it instance of Error.
       if (error.message === "Invalid username or password.") {
         res.status(401).json({ error: error.message });
       } else {
@@ -73,17 +60,12 @@ export const createNewBeeper = async (req: Request, res: Response): Promise<void
 
   export const updateTheStatusOfSpecificBeeper = async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId : string =  req.body.userId;
-      const updatedData : string =  req.body.updatedData;
-      const bookId: string = req.params.bookId;
-  
-      if (!userId || !updatedData) {
-        res.status(400).json({ error: "Username and password are required." });
-        return;
-      }
-  
-      const book = await edit(userId, bookId ,updatedData );
-      res.status(201).json({ book} );
+      const id: string = req.params.id;
+      const lat = req.body.lat;
+      const lon = req.body.lon;
+
+      const updatedBeeper = await updateTheStatusOfBeeper(id, lat, lon);
+      res.status(201).json({ updatedBeeper} );
     } catch (error: any) {
       if (error.message === "Username already exists.") {
         res.status(409).json({ error: error.message });
@@ -97,14 +79,9 @@ export const createNewBeeper = async (req: Request, res: Response): Promise<void
 
   export const deleteSpecificBeeperByID = async (req: Request, res: Response): Promise<void> => {
     try {
-      const userId : string =  req.body.userId;
-      const bookId: string = req.params.bookId;
-  
-      if (!userId) {
-        res.status(400).json({ error: "Username and password are required." });
-        return;
-      }
-      await deleteBookFromDB(userId, bookId);
+      const id: string = req.params.id;
+
+      await deleteBeeperByID(id);
       res.status(200).json({ success: "Internal server success." });
     } catch (error: any) {
       if (error.message === "Username already exists.") {
@@ -127,7 +104,7 @@ export const getBeepersByStatus = async (req: Request, res: Response): Promise<v
       return;
     }
 
-    const userId = await registerUser(userName, password);
+    const userId = await getAllBeepersByStatus(userName, password);
     res.status(201).json({ userid: userId });
   } catch (error: any) {
     if (error.message === "Username already exists.") {
