@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { readFromJsonFile, writeToJsonFile, writeAllToJsonFile } from "../dal/access.js"
+import { readFromJsonFile, writeToJsonFile, deleteFromJsonFile } from "../dal/access.js"
 import { Beeper } from "../models/Beeper.js";
 import { Status } from '../statuses/status.js'
 
@@ -62,30 +62,15 @@ export const updateTheStatusOfBeeper = async (id: string, status:string): Promis
 
 export const deleteBeeperByID = async (id: string): Promise<void> => {
   const deleteBeeper: Beeper = await getDetailsByID(id);
-  await writeToJsonFile(beeper);
+  await deleteFromJsonFile(deleteBeeper);
 };
  
 
-export const getAllBeepersByStatus = async (bookName: string, userId: string): Promise<Book> => {
-  const users: Beeper[] = await readFromJsonFile();
-  const userFind = users.find((u) => u.id === userId);
-
-  if (!userFind) {
-    throw new Error("Invalid username or password.");
+export const getAllBeepersByStatus = async (status:string): Promise<Beeper[] | undefined> => {
+  const beepers:Beeper[] | undefined = await getBeepers();
+  
+  if (beepers){
+    const beepersFind :Beeper[] | undefined = beepers.filter((beeper) => beeper.status === status);
+    return beepersFind;
   }
-  const books: Book[] = userFind.books;
-
-  const authorAPI: string = "API";
-
-  const bookId: string = uuidv4();
-
-  const newBook: Book = {
-    id: bookId,
-    title: bookName,
-    author: authorAPI,
-  };
-  books.push(newBook);
-
-  await writeUsersToJsonFile(users);
-  return newBook;
 };

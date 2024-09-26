@@ -12,9 +12,7 @@ export const writeToJsonFile = async (beeper: Beeper): Promise<void> => {
   await jsonfile.writeFile(DB_FILE_PATH, beepers);
 };
 
-export const writeAllToJsonFile = async (beeper: Beeper []): Promise<void> => {
-  await jsonfile.writeFile(DB_FILE_PATH, beeper);
-};
+
 
 export const readFromJsonFile = async (): Promise<Beeper[]> => {
   const beepers: Beeper[] = await jsonfile.readFile(DB_FILE_PATH);
@@ -22,3 +20,12 @@ export const readFromJsonFile = async (): Promise<Beeper[]> => {
 };
 
 
+export const deleteFromJsonFile = async (beeper: Beeper ): Promise<void> => {
+  const beepers: Beeper[] = await readFromJsonFile();
+  const beeperFind: Beeper | undefined = beepers.find((b) => b.id === beeper.id);
+  if (beeperFind) {
+    const index  = beepers.findIndex((i) => i.id === beeperFind.id);
+    beepers.splice(index, 1);
+    await jsonfile.writeFile(DB_FILE_PATH, beepers);
+  }
+};
