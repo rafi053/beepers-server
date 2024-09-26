@@ -6,7 +6,7 @@ import { createBeeper, getBeepers, getDetailsByID, updateTheStatusOfBeeper, dele
 
 export const createNewBeeper = async (req: Request, res: Response): Promise<void> => {
     try {
-      const  name: string = req.body;
+      const  name: string = req.body.name;
   
       if (!name) {
         res.status(400).json({ error: "Name is required." });
@@ -97,15 +97,10 @@ export const createNewBeeper = async (req: Request, res: Response): Promise<void
 
 export const getBeepersByStatus = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { userName, password }: userNamePassword = req.body;
+    const status = req.params.status;
 
-    if (!userName || !password) {
-      res.status(400).json({ error: "Username and password are required." });
-      return;
-    }
-
-    const userId = await getAllBeepersByStatus(userName, password);
-    res.status(201).json({ userid: userId });
+    const beepers = await getAllBeepersByStatus(status);
+    res.status(201).json({ beepers  });
   } catch (error: any) {
     if (error.message === "Username already exists.") {
       res.status(409).json({ error: error.message });

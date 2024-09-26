@@ -56,16 +56,18 @@ export const updateTheStatusOfBeeper = async (
     newBeeper.status = newStatus;
     newBeeper.latitude= lat;
     newBeeper.longitude= lon;
+    // newBeeper.created_at = new Date() + 10;
     await  updateJsonFile(newBeeper);
     return newStatus;
   }}
 
   else{
-    if (oldStatus === 'Incorrect status') {
+    if (newStatus === 'Incorrect status') {
     return oldStatus;
     }
-    else if(oldStatus === 'It is not possible to change status after detonated'){
+    else if(newStatus === 'It is not possible to change status after detonated'){
     return oldStatus;
+    
   }
 
   else{
@@ -141,3 +143,12 @@ function checkValidCords(lat: number, lon: number):boolean {
    }
   return true;
   }
+
+// function setTime(params:number): number {
+//   const time = setTimeout(() => {
+//     setTimeout((stupor) => {
+//       stupor,1000});
+//   }, timeout);
+//   return time;
+// }
+  

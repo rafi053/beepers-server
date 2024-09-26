@@ -1,9 +1,10 @@
 import  jsonfile from 'jsonfile';
 import { Beeper } from '../models/Beeper.js';
+import dotenv from "dotenv"
 
+dotenv.config();
 
-
-const DB_FILE_PATH = process.env.DB_FILE_PATH || '.data//beepers.json';
+const DB_FILE_PATH = process.env.DB_FILE_PATH || './data/beepers.json';
 
 
 export const writeToJsonFile = async (beeper: Beeper): Promise<void> => {
@@ -35,7 +36,7 @@ export const updateJsonFile = async (beeper: Beeper ): Promise<void> => {
   const beeperFind: Beeper | undefined = beepers.find((b) => b.id === beeper.id);
   if (beeperFind) {
     const index  = beepers.findIndex((i) => i.id === beeperFind.id);
-    beepers.splice(index, 1, beeperFind);
+    beepers.splice(index, 1, beeper);
     await jsonfile.writeFile(DB_FILE_PATH, beepers);
   }
 };
