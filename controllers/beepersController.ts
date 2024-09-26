@@ -6,15 +6,14 @@ import { createBeeper, getBeepers, getDetailsByID, updateTheStatusOfBeeper, dele
 
 export const createNewBeeper = async (req: Request, res: Response): Promise<void> => {
     try {
-      const bookName: string = req.body.bookName;
-      const userId: string = req.body.userId;
+      const  name: string = req.body;
   
-      if (!bookName || !userId) {
-        res.status(400).json({ error: "Username and password are required." });
+      if (!name) {
+        res.status(400).json({ error: "Name is required." });
         return;
       }
   
-      const book: Book = await add(bookName, userId);
+      const beeper: Beeper = await createBeeper(name);
       res.status(201).json({ bookId: book.id, book:book } );
     } catch (error: any) {
       if (error.message === "Username already exists.") {

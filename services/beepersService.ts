@@ -1,130 +1,73 @@
 import { v4 as uuidv4 } from "uuid";
-import { readFromJsonFile, writeToJsonFile } from "../dal/access.js"
-import bcrypt from "bcrypt"
-
-import { Book, User } from "../models/types.js";
-import {
-
-  writeUsersToJsonFile,
-} from "../dal/access.js";
+import { readFromJsonFile, writeToJsonFile, writeAllToJsonFile } from "../dal/access.js"
+import { Beeper } from "../models/Beeper.js";
+import { Status } from '../statuses/status.js'
 
 
-export const createBeeper = async (userName: string,password: string): Promise<string> => {
-  const users: User[] = await readFromJsonFile();
-  const existingUser = users.find((u) => u.userName === userName);
+export const createBeeper = async (name: string): Promise<Beeper> => {
+  const beeperId: string = uuidv4();
 
-  if (existingUser) {
-    throw new Error("Username already exists.");
+  const newBeeper: Beeper = {
+    id: beeperId,
+    name: name,
+    status: Status.manufactured,
+    created_at : new Date(),
+    detonated_at: undefined,
+    latitude : 0,
+    longitude:0
+
+  };
+  await writeToJsonFile(newBeeper);
+  return newBeeper;
+};
+
+
+
+export const getBeepers = async (): Promise<Beeper[] | undefined> => {
+  const beepers: Beeper[] = await readFromJsonFile();
+  return beepers;
+};
+
+
+export const getDetailsByID = async (id: string): Promise<Beeper> => {
+  const beepers: Beeper[] = await readFromJsonFile();
+  const beeperFind: Beeper | undefined = beepers.find((beeper) => beeper.id === id);
+
+  if (!beeperFind) {
+    throw new Error("Invalid  ID of beeper.");
   }
 
-  const hashedPassword = bcrypt.hashSync(password, 10);
+  return beeperFind;
+};
 
-  const newUserId: string = uuidv4();
+
+export const updateTheStatusOfBeeper = async (id: string, status:string): Promise<string> => {
+  const beeper: Beeper = await getDetailsByID(id);
+  const newStatus = status;
+
+  const newBeeper: Beeper = {
+    id: beeper.id,
+    name: beeper.name,
+    status: newStatus,
+    created_at : beeper.created_at,
+    detonated_at: beeper.created_at,
+    latitude : beeper.latitude,
+    longitude:beeper.longitude
+
+  };
+  await writeToJsonFile(newBeeper);
+  return newStatus;
   
-  const newUser: User = {
-    id: newUserId ,
-    userName,
-    password: hashedPassword,
-    books: [],
-  };
-
-  await writeToJsonFile(newUser);
-  return newUserId;
 };
 
-
-
-export const getBeepers = async (userId: string): Promise<Book[] | undefined> => {
-  const users: User[] = await readFromJsonFile();
-  const user = users.find((u) => u.id === userId);
-  const books: Book[] | undefined = user?.books;
-
-  if (!user) {
-    throw new Error("Username already exists.");
-  }
-  if (books) {
-    return books;
-  }
+export const deleteBeeperByID = async (id: string): Promise<void> => {
+  const deleteBeeper: Beeper = await getDetailsByID(id);
+  await writeToJsonFile(beeper);
 };
+ 
 
-export const getDetailsByID = async (
-  userId: string,
-  bookId: string,
-  updatedData: string
-): Promise<Book> => {
-  const users: User[] = await readFromJsonFile();
-  const userFind: User | undefined = users.find((u) => u.id === userId);
-
-  if (!userFind) {
-    throw new Error("Invalid username or password.");
-  }
-  const books: Book[] = userFind.books;
-  const bookFind: Book | undefined = books.find((b) => b.id === bookId);
-
-  if (!bookFind) {
-    throw new Error("Invalid username or password.");
-  }
-
-  const updateBook: Book = {
-    id: bookFind.id,
-    title: updatedData,
-    author: bookFind.author,
-  };
-  const index = books.findIndex((i) => i.id === bookFind.id);
-  books[index] = updateBook;
-
-  await writeUsersToJsonFile(users);
-  return updateBook;
-};
-
-export const updateTheStatusOfBeeper = async (
-  userId: string,
-  bookId: string
-): Promise<void> => {
-  const users: User[] = await readFromJsonFile();
-  const userFind: User | undefined = users.find((u) => u.id === userId);
-
-  if (!userFind) {
-    throw new Error("Invalid username or password.");
-  }
-  const books: Book[] = userFind.books;
-  const bookFind: Book | undefined = books.find((b) => b.id === bookId);
-
-  if (!bookFind) {
-    throw new Error("Invalid username or password.");
-  }
-
-  const index = books.findIndex((i) => i.id === bookFind.id);
-  books.splice(index, 1);
-
-  await writeUsersToJsonFile(users);
-};
-
-export const deleteBeeperByID = async (bookName: string, userId: string): Promise<Book> => {
-  const users: User[] = await readFromJsonFile();
-  const userFind = users.find((u) => u.id === userId);
-
-  if (!userFind) {
-    throw new Error("Invalid username or password.");
-  }
-  const books: Book[] = userFind.books;
-
-  const authorAPI: string = "API";
-
-  const bookId: string = uuidv4();
-
-  const newBook: Book = {
-    id: bookId,
-    title: bookName,
-    author: authorAPI,
-  };
-  books.push(newBook);
-
-  await writeUsersToJsonFile(users);
-  return newBook;
-};
 export const getAllBeepersByStatus = async (bookName: string, userId: string): Promise<Book> => {
-  const users: User[] = await readFromJsonFile();
+  const users: Beeper[] = await readFromJsonFile();
   const userFind = users.find((u) => u.id === userId);
 
   if (!userFind) {

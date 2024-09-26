@@ -6,7 +6,7 @@ import { Beeper } from '../models/Beeper.js';
 const DB_FILE_PATH = process.env.DB_FILE_PATH || '.data//beepers.json';
 
 
-export const writeOneToJsonFile = async (beeper: Beeper): Promise<void> => {
+export const writeToJsonFile = async (beeper: Beeper): Promise<void> => {
   const beepers: Beeper[] = await jsonfile.readFile(DB_FILE_PATH);
   beepers.push(beeper);
   await jsonfile.writeFile(DB_FILE_PATH, beepers);

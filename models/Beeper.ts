@@ -1,14 +1,14 @@
 
-import {Status}from './status'
+import {Status}from '../statuses/status'
 
 export interface Beeper{
   id:string
   name:string;
-  status:Status;
-  DateCreation?: Date;
-  DateExplosion?:Date;
-  Longitude?:number;
-  Latitude?:number;
+  status:string;
+  created_at: Date;
+  detonated_at?:Date;
+  latitude?:number;
+  longitude?:number;
 
  }
 
