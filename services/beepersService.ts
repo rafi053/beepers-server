@@ -1,8 +1,13 @@
 import { v4 as uuidv4 } from "uuid";
-import { readFromJsonFile, writeToJsonFile, deleteFromJsonFile } from "../dal/access.js"
+import {
+  readFromJsonFile,
+  writeToJsonFile,
+  deleteFromJsonFile,
+  updateJsonFile
+} from "../dal/access.js";
 import { Beeper } from "../models/Beeper.js";
-import { Status } from '../statuses/status.js'
-
+import { Status } from "../statuses/status.js";
+import { Latitude, Longitude } from '../coordinates/coordinates.js'
 
 export const createBeeper = async (name: string): Promise<Beeper> => {
   const beeperId: string = uuidv4();
@@ -11,27 +16,25 @@ export const createBeeper = async (name: string): Promise<Beeper> => {
     id: beeperId,
     name: name,
     status: Status.manufactured,
-    created_at : new Date(),
+    created_at: new Date(),
     detonated_at: undefined,
-    latitude : 0,
-    longitude:0
-
+    latitude: undefined,
+    longitude: undefined,
   };
   await writeToJsonFile(newBeeper);
   return newBeeper;
 };
-
-
 
 export const getBeepers = async (): Promise<Beeper[] | undefined> => {
   const beepers: Beeper[] = await readFromJsonFile();
   return beepers;
 };
 
-
 export const getDetailsByID = async (id: string): Promise<Beeper> => {
   const beepers: Beeper[] = await readFromJsonFile();
-  const beeperFind: Beeper | undefined = beepers.find((beeper) => beeper.id === id);
+  const beeperFind: Beeper | undefined = beepers.find(
+    (beeper) => beeper.id === id
+  );
 
   if (!beeperFind) {
     throw new Error("Invalid  ID of beeper.");
@@ -40,37 +43,81 @@ export const getDetailsByID = async (id: string): Promise<Beeper> => {
   return beeperFind;
 };
 
-
-export const updateTheStatusOfBeeper = async (id: string, status:string): Promise<string> => {
+export const updateTheStatusOfBeeper = async (
+  id: string, lat?: number, lon?: number
+): Promise<string> => {
   const beeper: Beeper = await getDetailsByID(id);
-  const newStatus = status;
+  const oldStatus: string = beeper.status;
+  const newStatus: string = getNextEnum(oldStatus);
+  if (oldStatus === 'Incorrect status') {
+    return oldStatus;
+  }
+  else if(oldStatus === 'It is not possible to change status after detonated'){
+    return oldStatus;
+  }
 
-  const newBeeper: Beeper = {
-    id: beeper.id,
-    name: beeper.name,
-    status: newStatus,
-    created_at : beeper.created_at,
-    detonated_at: beeper.created_at,
-    latitude : beeper.latitude,
-    longitude:beeper.longitude
+  else if(oldStatus === 'shipped' && checkValidCords(lat, lon)){
+    const newBeeper:Beeper= {...beeper}
+    newBeeper.status = newStatus;
+    newBeeper.latitude= lat;
+    newBeeper.longitude= lon;
+    await  updateJsonFile(newBeeper);
+    return newStatus;
+  }
 
-  };
-  await writeToJsonFile(newBeeper);
-  return newStatus;
-  
+  else{
+    const newBeeper:Beeper= {...beeper}
+    newBeeper.status = newStatus;
+    await  updateJsonFile(newBeeper);
+    return newStatus;
+  }
 };
+
 
 export const deleteBeeperByID = async (id: string): Promise<void> => {
   const deleteBeeper: Beeper = await getDetailsByID(id);
   await deleteFromJsonFile(deleteBeeper);
 };
- 
 
-export const getAllBeepersByStatus = async (status:string): Promise<Beeper[] | undefined> => {
-  const beepers:Beeper[] | undefined = await getBeepers();
-  
-  if (beepers){
-    const beepersFind :Beeper[] | undefined = beepers.filter((beeper) => beeper.status === status);
+export const getAllBeepersByStatus = async (
+  status: string
+): Promise<Beeper[] | undefined> => {
+  const beepers: Beeper[] | undefined = await getBeepers();
+
+  if (beepers) {
+    const beepersFind: Beeper[] | undefined = beepers.filter(
+      (beeper) => beeper.status === status
+    );
     return beepersFind;
   }
+
+ 
 };
+function getNextEnum(status: string): string {
+  let newStatus: string = '';
+  switch (status) {
+    case 'manufactured':
+      newStatus = 'assembled';
+      break;
+    case 'assembled':
+      newStatus = 'shipped';
+      break;
+    case 'shipped':
+      newStatus = 'deployed';
+      break;
+    case 'deployed':
+      newStatus = 'detonated';
+      break;
+    case 'detonated':
+      newStatus = 'It is not possible to change status after detonated';
+      break;
+    default:
+      newStatus = 'Incorrect status';
+  }
+  return newStatus;
+}
+
+
+function checkValidCords(lat: number, lon: number):boolean {
+  
+}
